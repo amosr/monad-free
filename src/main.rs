@@ -28,6 +28,10 @@ impl Date {
             }
         })
     }
+
+    fn gen_many<'a>() -> Gen<'a, Vec<Date>> {
+        Date::gen().vec(Gen::usize(0..20))
+    }
 }
 
 fn print_to_depth<'a, A : Debug>(tree : &Tree<'a, A>, max_depth : usize) -> () {
@@ -48,13 +52,48 @@ fn print_to_depth_go<'a, A : Debug>(tree : &Tree<'a, A>, max_depth : usize, curr
     }
 }
 
+use std::time::Instant;
+
+fn time_force_to_depth<'a, A : Debug>(tree : &Tree<'a, A>, max_depth : usize) -> usize {
+    let instant = Instant::now();
+    let count = force_to_depth_go(tree, max_depth, 0);
+    println!("Forced {} nodes, took {:?}", count, instant.elapsed());
+    count
+}
+
+fn force_to_depth_go<'a, A : Debug>(tree : &Tree<'a, A>, max_depth : usize, current_depth : usize) -> usize {
+    let mut count = 1;
+    let children = (*tree.children)();
+
+    if current_depth < max_depth {
+        for c in &children {
+            count += force_to_depth_go(c, max_depth, current_depth + 1);
+        }
+    }
+
+    count
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let rand = Random::new_from_seed(1);
     println!("Random: {:?}", rand);
     let size = 0;
-    let tree = (*Date::gen().run)(rand, size);
+    let tree = (*Date::gen_many().run)(rand, size);
 
-    print_to_depth(&tree, 2);
+    print_to_depth(&tree, 1);
+
+    println!("Timing shrinking ie failing case");
+    time_force_to_depth(&tree, 2);
+
+    println!("Timing non-shrink ie passing case");
+    let instant = Instant::now();
+    let count = 1000;
+    for i in 0..count {
+        let rand = Random::new_from_seed(i);
+        let _tree = (*Date::gen_many().run)(rand, size);
+        // println!("Generator test {} get value {:?}", i, _tree.value);
+    }
+    println!("Generated {} values, took {:?}", count, instant.elapsed());
 
     Ok(())
 }

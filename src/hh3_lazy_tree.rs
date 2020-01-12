@@ -233,5 +233,17 @@ impl<'a, A> Gen<'a, A> {
             v[ix].clone()
         })
     }
+
+    pub fn vec(self, gen_len : Gen<'a, usize>) -> Gen<'a, Vec<A>>
+    where A : 'a + Clone {
+        Gen::combine(move |c| {
+            let len = c.of(gen_len.clone());
+            let mut vec = Vec::new();
+            for _ in 0..len {
+                vec.push(c.of(self.clone()));
+            }
+            vec
+        })
+    }
 }
 
