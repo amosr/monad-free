@@ -6,6 +6,10 @@ pub mod hh1_no_tree;
 pub mod hh2_tree;
 pub mod hh3_lazy_tree;
 
+pub mod state;
+pub mod nondet;
+pub mod nonempty;
+
 use crate::random::Random;
 use hh3_lazy_tree::*;
 
@@ -18,7 +22,7 @@ impl Date {
     fn gen<'a>() -> Gen<'a, Date> {
         Gen::combine(|c| {
             Date {
-                year:  c.of(Gen::u64(0..300)),
+                year:  c.of(Gen::u64(0..3000)),
                 month: c.of(Gen::u64(0..12)),
                 day:   c.of(Gen::u64(0..32)),
             }
